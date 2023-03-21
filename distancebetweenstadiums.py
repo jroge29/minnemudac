@@ -1,20 +1,91 @@
 from geopy.geocoders import Nominatim
 import pandas as pd
-geolocator = Nominatim(user_agent="MyApp", timeout=10)
-location = geolocator.geocode("Wrigley Field")
-location2 = geolocator.geocode("American Family Field")
-number = ((location2.latitude - location.latitude) ** 2 + (location2.longitude - location.longitude) ** 2) ** (1 / 2)
-print(number)
-print(location)
-print(location2)
-df = pd.read_csv("distwithchn.csv")
-seen_problem = []
-for index, row in df.iterrows():
-    if (row["HomeTeam"] == "SLN" and row["VisitingTeam"] == "MIL" or row["VisitingTeam"] == "SLN" and row["HomeTeam"] == "MIL") and row["DistanceBetweenStadiums"] == 0.0:
-        df.at[index, "DistanceBetweenStadiums"] = number
-df.to_csv("distwithmil.csv", index = False)
+# geolocator = Nominatim(user_agent="MyApp", timeout=10)
+# location = geolocator.geocode("Petco Park")
+# location2 = geolocator.geocode("Truist Park")
+# number = ((location2.latitude - location.latitude) ** 2 + (location2.longitude - location.longitude) ** 2) ** (1 / 2)
+# print(number)
+# print(location)
+# print(location2)
+# df = pd.read_csv("distwithmil.csv")
+# seen_problem = []
+# for index, row in df.iterrows():
+#     if (row["HomeTeam"] == "ATL" and row["VisitingTeam"] == "SDN" or row["VisitingTeam"] == "ATL" and row["HomeTeam"] == "SDN") and row["DistanceBetweenStadiums"] == 0.0:
+#         df.at[index, "DistanceBetweenStadiums"] = number
+# df.to_csv("distwithatl.csv", index = False)
 
-# return [number, location, location2]
+# geolocator = Nominatim(user_agent="MyApp", timeout=10)
+# location = geolocator.geocode("Petco Park")
+# location2 = geolocator.geocode("Truist Park")
+# number = ((location2.latitude - location.latitude) ** 2 + (location2.longitude - location.longitude) ** 2) ** (1 / 2)
+# print(number)
+# print(location)
+# print(location2)
+df = pd.read_csv("distwithatl.csv")
+seen_problem = {}
+for index, row in df.iterrows():
+    if row["DistanceBetweenStadiums"] == 0.0:
+        if row["HomeTeam"] != "COL" and row["VisitingTeam"] != "COL" and (row["HomeTeam"],row["VisitingTeam"]) not in seen_problem or (row["HomeTeam"],row["VisitingTeam"]) not in seen_problem and row["VisitingTeam"] != "TEX" and row["HomeTeam"] != "TEX":
+            df2 = pd.read_csv("2023_MLBSchedule.csv")
+            for index, row2 in df2.iterrows():
+                if row2["home_team"] == row["HomeTeam"]:
+                    homeStadium = row2["stadium_name"]
+                if row2["away_team"] == row["VisitingTeam"]:
+                    awayStadium = row2["stadium_name"]
+            geolocator = Nominatim(user_agent="MyApp", timeout=10)
+            if homeStadium == "Oriole Park at Camden Yards":
+                homeStadium = "Baltimore"
+            if awayStadium == "Minute Maid Park":
+                awayStadium = "Houston"
+            if homeStadium == "Chase Field":
+                homeStadium = "Phoenix"
+            if awayStadium == "Chase Field":
+                awayStadium = "Phoenix"
+            if awayStadium == "Oriole Park at Camden Yards":
+                awayStadium = "Baltimore"
+            if awayStadium == "Oracle Park":
+                awayStadium = "San Francisco"
+            if homeStadium == "Oracle Park":
+                homeStadium = "San Francisco"
+            if awayStadium == "Oakland Coliseum":
+                awayStadium = "Oakland, California"
+            if homeStadium == "Oakland Coliseum":
+                homeStadium = "Oakland, California"
+            if awayStadium == "Global Life Field":
+                awayStadium = "Arlington"
+            if awayStadium == "TMobile Park":
+                awayStadium = "Seattle"
+            if homeStadium == "TMobile Park":
+                homeStadium = "Seattle"
+            tex = False
+            tex2 = False
+            if awayStadium == "Global Life Field":
+                awayStadium = "Arlington, Texas"
+                tex = True
+            if homeStadium == "Global Life Field":
+                homeStadium = "Arlington, Texas"
+                tex2 = True
+            location = geolocator.geocode(homeStadium)
+            location2 = geolocator.geocode(awayStadium)
+            print(awayStadium)
+            print(location)
+            print(location2)
+            print(row["HomeTeam"] + " home team")
+            print(row["VisitingTeam"] + " visiting team")
+            if tex == True:
+                # 32.74742857879089, -97.08396384735033
+                number = ((32.74742857879089 - location.latitude) ** 2 + (-97.08396384735033 - location.longitude) ** 2) ** (1 / 2)
+            if tex2 == True:
+                number = ((location2.latitude - 32.74742857879089) ** 2 + (location2.longitude - -97.08396384735033) ** 2) ** (1 / 2)
+            else:
+                number = ((location2.latitude - location.latitude) ** 2 + (location2.longitude - location.longitude) ** 2) ** (1 / 2)
+            print(number)
+            df.at[index, "DistanceBetweenStadiums"] = number
+            seen_problem[(row["HomeTeam"],row["VisitingTeam"])] = number
+        elif (row["HomeTeam"],row["VisitingTeam"]) in seen_problem or (row["HomeTeam"],row["VisitingTeam"]) in seen_problem:
+            df.at[index, "DistanceBetweenStadiums"] = seen_problem[(row["HomeTeam"], row["VisitingTeam"])]
+df.to_csv("add_dist.csv", index = False)
+
 # def betweenTwoStadiums(homeStadium, awayStadium):
 #     df = pd.read_csv("2023_MLBSchedule.csv")
 #     part1 = False

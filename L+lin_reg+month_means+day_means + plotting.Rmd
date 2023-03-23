@@ -1,0 +1,169 @@
+---
+title: "MinneMUDAC"
+author: "Tom Bareket"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#linear regression with basically all vars
+
+dat2 = add_dist[add_dist$year > 2018,]
+
+mod = lm(Attendance ~ DayofWeek + elo + DistanceBetweenStadiums + fixed_roof + retractable_roof + HistoricalAvgHrlyTemp + DayNight, data = dat2)
+summary(mod)
+```
+
+```{r}
+#mean for each day
+
+dat2 = add_dist[add_dist$year > 2018,]
+
+sun = dat2[dat2$DayofWeek == "Sun",]
+mon = dat2[dat2$DayofWeek == "Mon",]
+tue = dat2[dat2$DayofWeek == "Tue",]
+wed = dat2[dat2$DayofWeek == "Wed",]
+thu = dat2[dat2$DayofWeek == "Thu",]
+fri = dat2[dat2$DayofWeek == "Fri",]
+sat = dat2[dat2$DayofWeek == "Sat",]
+
+sunday = mean(sun$Attendance)
+monday = mean(mon$Attendance)
+tuesday = mean(tue$Attendance)
+#wednesdays had an NA
+wed.att = na.omit(wed$Attendance)
+wednesday = mean(wed.att)
+thursday = mean(thu$Attendance)
+friday = mean(fri$Attendance)
+saturday = mean(sat$Attendance)
+rbind(sunday,monday,tuesday,wednesday,thursday,friday,saturday)
+
+#plotting
+library(ggplot2)
+days = c('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday')
+value = c(sunday,monday,tuesday,wednesday,thursday,friday,saturday)
+dat = data.frame(day = factor(days, levels = c('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday')), attendance = value) 
+ggplot(dat, aes(x = day, y = attendance)) +
+  geom_bar(color = "red", stat = "identity", position = "dodge") + ggtitle("Average attendance by Day, MLB")
+```
+
+```{r}
+#mean for each day, only twins
+
+dat2 = add_dist[add_dist$year > 2018,]
+dat3 = dat2[dat2$hometeam == 'MIN',]
+
+sun.t = dat3[dat3$DayofWeek == "Sun",]
+mon.t = dat3[dat3$DayofWeek == "Mon",]
+tue.t = dat3[dat3$DayofWeek == "Tue",]
+wed.t = dat3[dat3$DayofWeek == "Wed",]
+thu.t = dat3[dat3$DayofWeek == "Thu",]
+fri.t = dat3[dat3$DayofWeek == "Fri",]
+sat.t = dat3[dat3$DayofWeek == "Sat",]
+sunday = mean(sun.t$Attendance)
+monday = mean(mon.t$Attendance)
+tuesday = mean(tue.t$Attendance)
+#wednesdays had an NA
+wed.att = na.omit(wed.t$Attendance)
+wednesday = mean(wed.att)
+thursday = mean(thu.t$Attendance)
+friday = mean(fri.t$Attendance)
+saturday = mean(sat.t$Attendance)
+rbind(sunday,monday,tuesday,wednesday,thursday,friday,saturday)
+
+#plotting 
+library(ggplot2)
+days = c('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday')
+value = c(sunday,monday,tuesday,wednesday,thursday,friday,saturday)
+dat = data.frame(day = factor(days, levels = c('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday')), attendance = value) 
+ggplot(dat, aes(x = day, y = attendance)) +
+  geom_bar(color = "blue", stat = "identity", position = "dodge") + ggtitle("Average attendance by Day, Twins only")
+```
+
+```{r}
+#mean for each month
+
+dat2 = add_dist[add_dist$year > 2018,]
+
+months = numeric(length(dat2$Date))
+for (d in 1:length(dat2$Date)) {
+  #indices 6 and 7 are the date, e.g. the "05" in "2021/05/14"
+  months[d] = substr(dat2$Date[d], 6, 7)
+}
+
+mar = dat2[months == '03',]
+apr = dat2[months == '04',]
+may1 = dat2[months == '05',]
+jun = dat2[months == '06',]
+jul = dat2[months == '07',]
+aug = dat2[months == '08',]
+sep = dat2[months == '09',]
+oct = dat2[months == '10',]
+
+
+march = mean(mar$Attendance)
+april = mean(apr$Attendance)
+may = mean(na.omit(may1$Attendance))
+june = mean(jun$Attendance)
+july = mean(jul$Attendance)
+august =mean(aug$Attendance)
+september = mean(sep$Attendance)
+october = mean(oct$Attendance)
+rbind(march, april, may, june, july, august, september, october)
+
+
+#plotting
+library(ggplot2)
+months = c('march', 'april', 'may', 'june', 'july', 'august', 'september', 'october')
+value = c(march, april, may, june, july, august, september, october)
+dat = data.frame(month = factor(months, levels = c('march', 'april', 'may', 'june', 'july', 'august', 'september', 'october')), attendance = value)
+ggplot(dat, aes(x = month, y = attendance)) +
+  geom_bar(color = "red", stat = "identity", position = "dodge") + ggtitle("Average attendance by Month, MLB")
+```
+
+```{r}
+#mean each month, only twins
+
+dat2 = add_dist[add_dist$year > 2018,]
+dat3 = dat2[dat2$hometeam == 'MIN',]
+
+months = numeric(length(dat3$Date))
+for (d in 1:length(dat3$Date)) {
+  months[d] = substr(dat3$Date[d], 6, 7)
+}
+
+mar.t = dat3[months == '03',]
+apr.t = dat3[months == '04',]
+may1.t = dat3[months == '05',]
+jun.t = dat3[months == '06',]
+jul.t = dat3[months == '07',]
+aug.t = dat3[months == '08',]
+sep.t = dat3[months == '09',]
+oct.t = dat3[months == '10',]
+
+march = mean(mar.t$Attendance)
+april = mean(apr.t$Attendance)
+may = mean(na.omit(may1.t$Attendance))
+june = mean(jun.t$Attendance)
+july = mean(jul.t$Attendance)
+august =mean(aug.t$Attendance)
+september = mean(sep.t$Attendance)
+october = mean(na.omit(oct.t$Attendance))
+#No October because Twins didn't play in last 5 years of playoffs
+rbind(march, april, may, june, july, august, september)
+
+#plotting
+library(ggplot2)
+months = c('march', 'april', 'may', 'june', 'july', 'august', 'september')
+value = c(march, april, may, june, july, august, september)
+dat = data.frame(month = factor(months, levels = c('march', 'april', 'may', 'june', 'july', 'august', 'september')), attendance = value)
+dat
+ggplot(dat, aes(x = month, y = attendance)) +
+  geom_bar(color = "blue", stat = "identity", position = "dodge") + ggtitle("Average attendance by Month, Twins only")
+```
+
+
